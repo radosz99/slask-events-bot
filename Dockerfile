@@ -9,4 +9,5 @@ COPY . ./
 RUN pip install -r requirements.txt
 
 ENV PATH="${PATH}:/usr/app/src"
+COPY constants.py ./
 CMD ["python", "./main.py"]

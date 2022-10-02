@@ -6,8 +6,8 @@ XPATHS = {
     "title": ".//p[@class='card-title text-center']",
     "tickets_url": ".//a[@class='btn btn-block btn-info font-weight-bold']"
 }
-SCAN_PERIOD = 5
-DEBUG = True  # set to True to avoid sending real sms
+SCAN_PERIOD = 120
+DEBUG = False  # set to True to avoid sending real sms
 DEBUG_MESSAGE = {"messageId": "16054772"}
 SMS_LIMIT = 15
 TOTAL_SMS_SENT = 0
