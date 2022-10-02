@@ -1,3 +1,6 @@
 *.log
 secrets.py
 venv/
+
+.idea/
+__pycache__/
