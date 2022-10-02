@@ -1,0 +1,3 @@
+*.log
+secrets.py
+venv/
