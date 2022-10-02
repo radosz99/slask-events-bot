@@ -7,7 +7,7 @@ from utils import log_message
 
 def notify_user_about_the_event_via_sms(event):
     sms_content = event.sms_content()
-    log_message(f"Sending SMS: \n {sms_content} \n")
+    log_message(f"Preparing SMS: \n {sms_content} \n")
     SMS_REQUEST_DETAILS['msg'] = sms_content
     return send_sms(SMS_REQUEST_DETAILS)
 
@@ -42,6 +42,7 @@ def increment_sms_sent_number():
 
 def send_sms_via_smsplanet_api(sms_details):
     if not DEBUG and sms_limit_exceeded():
+        log_message("Trying to send SMS")
         return requests.get(SMS_API_URL, params=sms_details).json()
     else:
         return DEBUG_MESSAGE
