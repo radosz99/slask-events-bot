@@ -15,6 +15,7 @@ def notify_user_about_the_event_via_sms(event):
 def send_sms(sms_details):
     response_json = send_sms_via_smsplanet_api(sms_details)
     if "messageId" in response_json:
+        increment_sms_sent_number()
         log_message(f"Message has been sent, id = {response_json['messageId']}, debug mode = {DEBUG}")
         return True
     else:
@@ -41,7 +42,6 @@ def increment_sms_sent_number():
 
 def send_sms_via_smsplanet_api(sms_details):
     if not DEBUG and sms_limit_exceeded():
-        increment_sms_sent_number()
         return requests.get(SMS_API_URL, params=sms_details).json()
     else:
         return DEBUG_MESSAGE
