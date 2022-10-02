@@ -18,7 +18,8 @@ def send_sms(sms_details):
         log_message(f"Message has been sent, id = {response_json['messageId']}, debug mode = {DEBUG}")
         return True
     else:
-        log_message("Message has not been sent due to an error, probably not enough points on sms planet platform")
+        log_message(f"Message has not been sent due to an error, probably not enough points on sms planet platform - "
+                    f"{response_json}")
         return False
 
 
