@@ -1,7 +1,6 @@
 import traceback
 from time import sleep
 
-from constants import SCAN_PERIOD
 from utils import get_driver, log_message, get_slask_events, get_new_elements_on_list
 from sms_sender import notify_user_about_the_event_via_sms
 
@@ -44,6 +43,7 @@ def main():
         except Exception:
             log_message(f"Exception has occurred = {traceback.format_exc()}")
         finally:
+            from constants import SCAN_PERIOD
             log_message(f"Quitting the driver and sleeping for {SCAN_PERIOD} seconds")
             driver.quit()
             sleep(SCAN_PERIOD)
