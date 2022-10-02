@@ -1,3 +1,5 @@
+import logging
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
@@ -37,8 +39,8 @@ def get_place_from_event(event_element):
     return get_text_inside_element_by_xpath(event_element, XPATHS['place'])
 
 
-def log_message(string):
-    logger.info(string)
+def log_message(string, level=logging.INFO):
+    logger.log(level, string)
 
 
 def get_new_elements_on_list(new_list, old_list):

@@ -22,29 +22,30 @@ def notify_user_about_new_event_if_first_team_is_playing(new_event):
         log_message("Not the first team event, no SMS will be send")
 
 
+def notify_user_if_new_events_have_appeared(latest_events, current_events):
+    if current_events != latest_events:
+        log_message("New event have appeared")
+        for new_event in get_new_elements_on_list(current_events, latest_events):
+            log_message(f"New event - {new_event}")
+            notify_user_about_new_event_if_first_team_is_playing(new_event)
+    else:
+        log_message("Nothing has changed, old events :(")
+
+
 def main():
     latest_events = []
     while True:
-        log_message("Getting new driver")
-        driver = get_driver(headless=False)
+        driver = get_driver(headless=True)
         try:
+            log_message("Getting new driver and fetching Slask Wroclaw events")
             events = get_slask_events(driver)
-            log_message("Fetching Slask Wroclaw events")
-            if events != latest_events:
-                log_message("New event have appeared")
-                for new_event in get_new_elements_on_list(events, latest_events):
-                    log_message(f"New event - {new_event}")
-                    notify_user_about_new_event_if_first_team_is_playing(new_event)
-            else:
-                log_message("Nothing has changed, old events :(")
+            notify_user_if_new_events_have_appeared(latest_events, events)
             latest_events = events
-            sleep(10)
         except Exception:
             log_message(f"Exception has occurred = {traceback.format_exc()}")
         finally:
-            log_message("Quitting the driver")
+            log_message(f"Quitting the driver and sleeping for {SCAN_PERIOD} seconds")
             driver.quit()
-            log_message(f"Sleeping for {SCAN_PERIOD} seconds")
             sleep(SCAN_PERIOD)
 
 
