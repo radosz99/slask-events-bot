@@ -1,19 +1,16 @@
-import requests
-
 from constants import DEBUG, DEBUG_MESSAGE
-from secrets import SMS_API_URL, SMS_REQUEST_DETAILS
 from utils import log_message
+import smsplanet_api
 
 
 def notify_user_about_the_event_via_sms(event):
     sms_content = event.sms_content()
-    log_message(f"Preparing SMS: \n {sms_content} \n")
-    SMS_REQUEST_DETAILS['msg'] = sms_content
-    return send_sms(SMS_REQUEST_DETAILS)
+    log_message(f"Prepared SMS with length = {len(sms_content)}: \n {sms_content} \n")
+    return send_sms_and_validate(sms_content)
 
 
-def send_sms(sms_details):
-    response_json = send_sms_via_smsplanet_api(sms_details)
+def send_sms_and_validate(sms_content):
+    response_json = send_sms_via_smsplanet_api(sms_content)
     if "messageId" in response_json:
         increment_sms_sent_number()
         log_message(f"Message has been sent, id = {response_json['messageId']}, debug mode = {DEBUG}")
@@ -40,9 +37,9 @@ def increment_sms_sent_number():
     log_message(f"Incrementing SMS sent total number, current = {constants.TOTAL_SMS_SENT}")
 
 
-def send_sms_via_smsplanet_api(sms_details):
+def send_sms_via_smsplanet_api(sms_content):
     if not DEBUG and sms_limit_exceeded():
         log_message("Trying to send SMS")
-        return requests.get(SMS_API_URL, params=sms_details).json()
+        return smsplanet_api.send_sms_via_get_method(sms_content)
     else:
         return DEBUG_MESSAGE

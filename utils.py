@@ -7,6 +7,7 @@ from selenium.webdriver.firefox.options import Options
 
 from constants import XPATHS, TICKETS_WEBSITE
 from logger import logger
+from smsplanet_api import cut_url
 
 
 def get_attribute_value_from_element_by_xpath(selenium_element, xpath, attribute_name):
@@ -16,9 +17,20 @@ def get_attribute_value_from_element_by_xpath(selenium_element, xpath, attribute
         return None
 
 
+def remove_accents(string):
+    strange = 'ŮôῡΒძěἊἦëĐᾇόἶἧзвŅῑἼźἓŉἐÿἈΌἢὶЁϋυŕŽŎŃğûλВὦėἜŤŨîᾪĝžἙâᾣÚκὔჯᾏᾢĠфĞὝŲŊŁČῐЙῤŌὭŏყἀхῦЧĎὍОуνἱῺèᾒῘᾘὨШūლἚύсÁóĒἍŷöὄЗὤἥბĔõὅῥŋБщἝξĢюᾫაπჟῸდΓÕűřἅгἰშΨńģὌΥÒᾬÏἴქὀῖὣᾙῶŠὟὁἵÖἕΕῨčᾈķЭτἻůᾕἫжΩᾶŇᾁἣჩαἄἹΖеУŹἃἠᾞåᾄГΠКíōĪὮϊὂᾱიżŦИὙἮὖÛĮἳφᾖἋΎΰῩŚἷРῈĲἁéὃσňİΙῠΚĸὛΪᾝᾯψÄᾭêὠÀღЫĩĈμΆᾌἨÑἑïოĵÃŒŸζჭᾼőΣŻçųøΤΑËņĭῙŘАдὗპŰἤცᾓήἯΐÎეὊὼΘЖᾜὢĚἩħĂыῳὧďТΗἺĬὰὡὬὫÇЩᾧñῢĻᾅÆßшδòÂчῌᾃΉᾑΦÍīМƒÜἒĴἿťᾴĶÊΊȘῃΟúχΔὋŴćŔῴῆЦЮΝΛῪŢὯнῬũãáἽĕᾗნᾳἆᾥйᾡὒსᾎĆрĀüСὕÅýფᾺῲšŵкἎἇὑЛვёἂΏθĘэᾋΧĉᾐĤὐὴιăąäὺÈФĺῇἘſგŜæῼῄĊἏØÉПяწДĿᾮἭĜХῂᾦωთĦлðὩზკίᾂᾆἪпἸиᾠώᾀŪāоÙἉἾρаđἌΞļÔβĖÝᾔĨНŀęᾤÓцЕĽŞὈÞუтΈέıàᾍἛśìŶŬȚĳῧῊᾟάεŖᾨᾉςΡმᾊᾸįᾚὥηᾛġÐὓłγľмþᾹἲἔбċῗჰხοἬŗŐἡὲῷῚΫŭᾩὸùᾷĹēრЯĄὉὪῒᾲΜᾰÌœĥტ'
+    ascii_replacements = 'UoyBdeAieDaoiiZVNiIzeneyAOiiEyyrZONgulVoeETUiOgzEaoUkyjAoGFGYUNLCiIrOOoqaKyCDOOUniOeiIIOSulEySAoEAyooZoibEoornBSEkGYOapzOdGOuraGisPngOYOOIikoioIoSYoiOeEYcAkEtIuiIZOaNaicaaIZEUZaiIaaGPKioIOioaizTIYIyUIifiAYyYSiREIaeosnIIyKkYIIOpAOeoAgYiCmAAINeiojAOYzcAoSZcuoTAEniIRADypUitiiIiIeOoTZIoEIhAYoodTIIIaoOOCSonyKaAsSdoACIaIiFIiMfUeJItaKEISiOuxDOWcRoiTYNLYTONRuaaIeinaaoIoysACRAuSyAypAoswKAayLvEaOtEEAXciHyiiaaayEFliEsgSaOiCAOEPYtDKOIGKiootHLdOzkiaaIPIIooaUaOUAIrAdAKlObEYiINleoOTEKSOTuTEeiaAEsiYUTiyIIaeROAsRmAAiIoiIgDylglMtAieBcihkoIrOieoIYuOouaKerYAOOiaMaIoht'
+
+    translator = str.maketrans(strange, ascii_replacements)
+
+    return string.translate(translator)
+
+
 def get_text_inside_element_by_xpath(selenium_element, xpath):
     try:
-        return selenium_element.find_element(By.XPATH, xpath).text
+        text = selenium_element.find_element(By.XPATH, xpath).text
+        text_without_accents = remove_accents(text)
+        return text_without_accents
     except NoSuchElementException:
         return None
 
@@ -72,11 +84,20 @@ class Event:
         return hash(self.__key())
 
     def slask_first_team_event(self):
-        return "WKS Śląsk Wrocław" in self.name and "vs" in self.name
+        return "WKS Slask Wroclaw" in self.name and "vs" in self.name
 
     def sms_content(self):
-        # return f"Tickets for {self.name} on {self.date} in {self.place} are now available here - {self.tickets_url_2}"
-        return f"Tickets for {self.name} on {self.date} in {self.place} are now available"
+        content = self.sms_content_under_160_characters()
+        log_message(f"Prepared content with length = {len(content)}: {content}")
+        return content
+
+    def sms_content_under_160_characters(self):
+        short_url = cut_url_via_smsplanet_api(self.tickets_url_2)
+        content = f"Tickets for {self.name} on {self.date} in {self.place}: - {short_url}"
+        if len(content) < 160:
+            return content
+        else:
+            return f"Tickets for {self.name}: - {short_url}"
 
 
 def get_driver(headless=True):
@@ -89,3 +110,12 @@ def get_driver(headless=True):
 def get_slask_events(driver):
     driver.get(TICKETS_WEBSITE)
     return [Event(event_row) for event_row in driver.find_elements(By.XPATH, XPATHS['event_row'])]
+
+
+def cut_url_via_smsplanet_api(url):
+    log_message(f"Cutting url '{url}' via sms planet api")
+    response = cut_url(url)
+    short_url = response.get("shortUrl", "")
+    log_message(f"URL has been cut to '{short_url}'")
+    return short_url
+

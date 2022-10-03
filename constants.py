@@ -7,8 +7,8 @@ XPATHS = {
     "tickets_url": ".//a[@class='btn btn-block btn-info font-weight-bold']"
 }
 SCAN_PERIOD = 120
-DEBUG = False  # set to True to avoid sending real sms
+DEBUG = True  # set to True to avoid sending real sms
 DEBUG_MESSAGE = {"messageId": "16054772"}
-SMS_LIMIT = 15
+SMS_LIMIT = 5
 TOTAL_SMS_SENT = 0
 LOG_FILE = "debug.log"
