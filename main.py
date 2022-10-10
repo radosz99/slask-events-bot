@@ -22,13 +22,14 @@ def notify_user_about_new_event_if_first_team_is_playing(new_event):
 
 
 def notify_user_if_new_events_have_appeared(latest_events, current_events):
-    if current_events != latest_events:
-        log_message("New event have appeared")
-        for new_event in get_new_elements_on_list(current_events, latest_events):
+    new_events = get_new_elements_on_list(current_events, latest_events)
+    if new_events:
+        log_message("List of events has changed")
+        for new_event in new_events:
             log_message(f"New event - {new_event}")
             notify_user_about_new_event_if_first_team_is_playing(new_event)
     else:
-        log_message("Nothing has changed, old events :(")
+        log_message("Nothing has changed, no new events :(")
 
 
 def main():
