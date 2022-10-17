@@ -6,9 +6,13 @@ XPATHS = {
     "title": ".//p[@class='card-title text-center']",
     "tickets_url": ".//a[@class='btn btn-block btn-info font-weight-bold']"
 }
-SCAN_PERIOD = 30
-DEBUG = True  # set to True to avoid sending real sms
-DEBUG_MESSAGE = {"messageId": "16054772"}
-SMS_LIMIT = 5
-TOTAL_SMS_SENT = 0
+
+SCAN_PERIOD = 30  # time of sleeping in a loop
 LOG_FILE = "debug.log"
+
+DEBUG = True  # set to True to avoid sending real sms
+DEBUG_MESSAGE = {"messageId": "DEBUG MODE IS ON"}  # this mocked response will be sent if DEBUG = True
+
+SMS_LIMIT = 5  # maximum amount of SMS to send from SMS planet API for avoiding bankruptcy
+TOTAL_SMS_SENT = 0  # for checking if limit has been exceeded
+SMS_LENGTH_LIMIT = 160  # maximum SMS content length above which content will be truncated

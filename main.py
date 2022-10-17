@@ -15,16 +15,16 @@ def notify_user_about_new_event(new_event):
 
 def notify_user_about_new_event_if_first_team_is_playing(new_event):
     if new_event.slask_first_team_event():
-        log_message("It is the first team event, SMS will be send")
+        log_message("It is the first team game, SMS will be send")
         notify_user_about_new_event(new_event)
     else:
-        log_message("Not the first team event, no SMS will be send")
+        log_message("Not the first team game, no SMS will be send")
 
 
 def notify_user_if_new_events_have_appeared(latest_events, current_events):
     new_events = get_new_elements_on_list(current_events, latest_events)
     if new_events:
-        log_message("List of events has changed")
+        log_message(f"List of events has changed, old events = {latest_events}, current events = {current_events}")
         for new_event in new_events:
             log_message(f"New event - {new_event}")
             notify_user_about_new_event_if_first_team_is_playing(new_event)

@@ -5,9 +5,9 @@ from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.firefox.options import Options
 
-from constants import XPATHS, TICKETS_WEBSITE
+from constants import XPATHS, TICKETS_WEBSITE, SMS_LENGTH_LIMIT
 from logger import logger
-from smsplanet_api import cut_url
+import smsplanet_api
 
 
 def get_attribute_value_from_element_by_xpath(selenium_element, xpath, attribute_name):
@@ -71,11 +71,14 @@ class Event:
         return self.name, self.place, self.date
 
     def get_better_tickets_url(self):
-        return self.tickets_url.replace('impreza', 'sala')
+        try:
+            return self.tickets_url.replace('impreza', 'sala')
+        except Exception:
+            return self.tickets_url
 
     def __str__(self):
         return f"Title = {self.name} will take place in {self.place} on {self.date}, first team = " \
-               f"{self.slask_first_team_event()}, tickets url = {self.tickets_url_2}"
+               f"{self.slask_first_team_game()}, tickets url = {self.tickets_url_2}"
 
     def __eq__(self, other):
         return self.name == other.name and self.date == other.date and self.place == other.place
@@ -83,18 +86,24 @@ class Event:
     def __hash__(self):
         return hash(self.__key())
 
+    def slask_first_team_game(self):
+        return self.slask_first_team_event() and self.game_event()
+
     def slask_first_team_event(self):
-        return "WKS Slask Wroclaw" in self.name and "vs" in self.name
+        return "WKS Slask Wroclaw" in self.name
+
+    def game_event(self):
+        return "vs" in self.name
 
     def sms_content(self):
-        content = self.sms_content_under_160_characters()
+        content = self.sms_content_under_limit()
         log_message(f"Prepared content with length = {len(content)}: {content}")
         return content
 
-    def sms_content_under_160_characters(self):
+    def sms_content_under_limit(self):
         short_url = cut_url_via_smsplanet_api(self.tickets_url_2)
         content = f"Tickets for {self.name} on {self.date} in {self.place}: - {short_url}"
-        if len(content) < 160:
+        if len(content) < SMS_LENGTH_LIMIT:
             return content
         else:
             return f"Tickets for {self.name}: - {short_url}"
@@ -114,8 +123,7 @@ def get_slask_events(driver):
 
 def cut_url_via_smsplanet_api(url):
     log_message(f"Cutting url '{url}' via sms planet api")
-    response = cut_url(url)
-    short_url = response.get("shortUrl", "")
+    short_url = smsplanet_api.get_truncated_url(url)
     log_message(f"URL has been cut to '{short_url}'")
     return short_url
 

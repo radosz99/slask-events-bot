@@ -21,7 +21,7 @@ def send_sms_via_get_method(content):
     return response_json
 
 
-def cut_url(long_url):
+def get_truncated_url(long_url):
     cut_url_details = {
         'longUrl': long_url,
         'key': API_KEY,
@@ -29,4 +29,4 @@ def cut_url(long_url):
     log_message(f"Cutting URL via sms planet API with details = {cut_url_details}")
     response_json = requests.post(CUT_URL_API, params=cut_url_details).json()
     log_message(f"Response = {response_json}")
-    return response_json
+    return response_json.get("shortUrl", "")
