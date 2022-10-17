@@ -2,6 +2,10 @@
 
 Python application for notifying when tickets for new event of Slask Wroclaw basketball team appeared on [this](http://wks-slask.abilet.pl/) page.  
 
+<p align="center">
+  <img src="https://github.com/radosz99/slask-events-bot/blob/main/screen.png" width=30% alt="Img"/>
+</p>
+
 ## Detail info
 The application is running as a Docker daemon with Python script in it and in a loop it checks content of page with tickets. In a loop it scraps current events for which tickets are available and compares with previously scrapped events. If some changes occurred then SMS notification with specially prepared content is sent according to `secrets.py` file.  
 
