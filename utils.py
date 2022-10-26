@@ -8,6 +8,7 @@ from selenium.webdriver.firefox.options import Options
 from constants import XPATHS, TICKETS_WEBSITE, SMS_LENGTH_LIMIT
 from logger import logger
 import smsplanet_api
+import exceptions as exc
 
 
 def get_attribute_value_from_element_by_xpath(selenium_element, xpath, attribute_name):
@@ -36,7 +37,11 @@ def get_text_inside_element_by_xpath(selenium_element, xpath):
 
 
 def get_tickets_url_from_event(event_element):
-    return get_attribute_value_from_element_by_xpath(event_element, XPATHS['tickets_url'], 'href')
+    url = get_attribute_value_from_element_by_xpath(event_element, XPATHS['tickets_url'], 'href')
+    if url is None:
+        raise exc.URLNotAvailableError("URL with tickets is not available yet, wait a few minutes")
+    else:
+        return url
 
 
 def get_name_from_event(event_element):
@@ -61,6 +66,7 @@ def get_new_elements_on_list(new_list, old_list):
 
 class Event:
     def __init__(self, event):
+        log_message(f"Creating an event instance from a Selenium element = {event.text}")
         self.name = get_name_from_event(event)
         self.place = get_place_from_event(event)
         self.date = get_date_from_event(event)
@@ -99,7 +105,6 @@ class Event:
         return "vs" in self.name
 
     def sms_content(self):
-        # TODO: handle when url is None, throw an exception URLNotAvailableYet, add tests for mocked Event
         content = self.sms_content_under_limit()
         log_message(f"Prepared content with length = {len(content)}: {content}")
         return content
@@ -131,3 +136,15 @@ def cut_url_via_smsplanet_api(url):
     log_message(f"URL has been cut to '{short_url}'")
     return short_url
 
+
+def modify_scan_period(normal):
+    import constants
+    if normal:
+        constants.SCAN_PERIOD = constants.SCAN_PERIOD_NORMAL
+    else:
+        constants.SCAN_PERIOD = constants.SCAN_PERIOD_WHEN_WAITING_FOR_URL
+
+
+def get_scan_period():
+    import constants
+    return constants.SCAN_PERIOD

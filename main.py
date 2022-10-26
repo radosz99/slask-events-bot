@@ -1,16 +1,13 @@
 import traceback
 from time import sleep
 
-from utils import get_driver, log_message, get_slask_events, get_new_elements_on_list
+from utils import get_driver, log_message, get_slask_events, get_new_elements_on_list, modify_scan_period, get_scan_period
 from sms_sender import notify_user_about_the_event_via_sms
+import exceptions as exc
 
 
 def notify_user_about_new_event(new_event):
-    user_notified = notify_user_about_the_event_via_sms(new_event)
-    if user_notified:
-        log_message("User has been notified about the event")
-    else:
-        log_message("User has not been notified for some reason")
+    notify_user_about_the_event_via_sms(new_event)
 
 
 def notify_user_about_new_event_if_first_team_is_playing(new_event):
@@ -44,13 +41,16 @@ def main():
             else:
                 log_message(f"First loop iteration, current events = {events}")
             latest_events = events
+            modify_scan_period(normal=True)
+        except exc.URLNotAvailableError:
+            modify_scan_period(normal=False)
         except Exception:
             log_message(f"Exception has occurred = {traceback.format_exc()}")
         finally:
-            from constants import SCAN_PERIOD
-            log_message(f"Quitting the driver and sleeping for {SCAN_PERIOD} seconds")
+            scan_period = get_scan_period()
+            log_message(f"Quitting the driver and sleeping for {scan_period} seconds")
             driver.quit()
-            sleep(SCAN_PERIOD)
+            sleep(scan_period)
 
 
 if __name__ == '__main__':
