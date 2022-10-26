@@ -39,7 +39,10 @@ def main():
         try:
             log_message("Getting new driver and fetching Slask Wroclaw events")
             events = get_slask_events(driver)
-            notify_user_if_new_events_have_appeared(latest_events, events)
+            if latest_events:
+                notify_user_if_new_events_have_appeared(latest_events, events)
+            else:
+                log_message(f"First loop iteration, current events = {events}")
             latest_events = events
         except Exception:
             log_message(f"Exception has occurred = {traceback.format_exc()}")

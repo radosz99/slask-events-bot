@@ -80,6 +80,9 @@ class Event:
         return f"Title = {self.name} will take place in {self.place} on {self.date}, first team = " \
                f"{self.slask_first_team_game()}, tickets url = {self.tickets_url_2}"
 
+    def __repr__(self):
+        return self.__str__()
+
     def __eq__(self, other):
         return self.name == other.name and self.date == other.date and self.place == other.place
 
@@ -96,6 +99,7 @@ class Event:
         return "vs" in self.name
 
     def sms_content(self):
+        # TODO: handle when url is None, throw an exception URLNotAvailableYet, add tests for mocked Event
         content = self.sms_content_under_limit()
         log_message(f"Prepared content with length = {len(content)}: {content}")
         return content
