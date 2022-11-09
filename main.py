@@ -16,9 +16,9 @@ def notify_user_about_new_event(new_event):
 
 def notify_user_about_new_event_if_first_team_is_playing(new_event):
     if not new_event.slask_first_team_event():
-        log_message("Not the first team game, no SMS will be send")
-    elif new_event.tickets_url is None:
-        log_message("First team game, but tickets are not available yet")
+        log_message("Not the first team game, SMS will not be send")
+    elif not new_event.tickets_available():
+        log_message("First team game, but tickets are not available yet, SMS will not be send")
     else:
         log_message("It is the first team game with active tickets url, SMS will be send")
         notify_user_about_new_event(new_event)

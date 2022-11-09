@@ -107,6 +107,9 @@ class Event:
     def slask_first_team_game(self):
         return self.slask_first_team_event() and self.game_event()
 
+    def tickets_available(self):
+        return self.tickets_url is not None
+
     def slask_first_team_event(self):
         return "WKS Slask Wroclaw" in self.name
 
@@ -114,7 +117,6 @@ class Event:
         return "vs" in self.name
 
     def sms_content(self):
-        # TODO: handle when url is None, throw an exception URLNotAvailableYet, add tests for mocked Event
         content = self.sms_content_under_limit()
         log_message(f"Prepared content with length = {len(content)}: {content}")
         return content
