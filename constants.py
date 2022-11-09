@@ -7,10 +7,9 @@ XPATHS = {
     "tickets_url": ".//a[@class='btn btn-block btn-info font-weight-bold']"
 }
 
-SCAN_PERIOD_NORMAL = 30  # normal time of sleeping in a loop
-SCAN_PERIOD_WHEN_WAITING_FOR_URL = 10  # time of sleeping in a loop when URL is not available yet
-SCAN_PERIOD = SCAN_PERIOD_NORMAL  # time of sleeping in a loop
+SCAN_PERIOD = 30  # time of sleeping in a loop
 LOG_FILE = "debug.log"
+SKIP_FIRST_LOOP = True
 
 DEBUG = True  # set to True to avoid sending real sms
 DEBUG_MESSAGE = {"messageId": "DEBUG MODE IS ON"}  # this mocked response will be sent if DEBUG = True
