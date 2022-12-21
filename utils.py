@@ -1,19 +1,18 @@
 import logging
+import re
 
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.firefox.options import Options
+from urllib.request import urlopen
+from lxml import etree
 
-from constants import XPATHS, TICKETS_WEBSITE, SMS_LENGTH_LIMIT
+from constants import XPATHS, TICKETS_URL, SMS_LENGTH_LIMIT
 from logger import logger
 import smsplanet_api
 
 
-def get_attribute_value_from_element_by_xpath(selenium_element, xpath, attribute_name):
+def get_attribute_value_from_element_by_xpath(element, xpath, attribute_name):
     try:
-        return selenium_element.find_element(By.XPATH, xpath).get_attribute(attribute_name)
-    except NoSuchElementException:
+        return element.xpath(xpath)[0].get(attribute_name)
+    except IndexError:
         return None
 
 
@@ -26,12 +25,12 @@ def remove_accents(string):
     return string.translate(translator)
 
 
-def get_text_inside_element_by_xpath(selenium_element, xpath):
+def get_text_inside_element_by_xpath(element, xpath):
     try:
-        text = selenium_element.find_element(By.XPATH, xpath).text
+        text = element.xpath(xpath)[0].text
         text_without_accents = remove_accents(text)
         return text_without_accents
-    except NoSuchElementException:
+    except IndexError:
         return None
 
 
@@ -44,15 +43,13 @@ def get_name_from_event(event_element):
 
 
 def get_date_from_event(event_element):
-    return get_text_inside_element_by_xpath(event_element, XPATHS['date'])
+    date = get_text_inside_element_by_xpath(event_element, XPATHS['date'])
+    date = date.replace('\n', ' ').replace('\r', '').lstrip().rstrip()
+    return re.sub(' +', ' ', date)
 
 
 def get_place_from_event(event_element):
     return get_text_inside_element_by_xpath(event_element, XPATHS['place'])
-
-
-def log_message(string, level=logging.INFO):
-    logger.log(level, string)
 
 
 def get_new_elements_on_list(new_list, old_list):
@@ -61,24 +58,23 @@ def get_new_elements_on_list(new_list, old_list):
 
 class Event:
     def __init__(self, **kwargs):
-        event = kwargs.get('selenium_event', None)
-        if event is not None:
-            self._create_from_selenium_element(event)
+        if event := kwargs.get('lxml_event', None):
+            self._create_from_lxml_element(event)
         else:
             self._create_from_arguments(kwargs)
-
-    def _create_from_selenium_element(self, event):
-        self.name = get_name_from_event(event)
-        self.place = get_place_from_event(event)
-        self.date = get_date_from_event(event)
-        self.tickets_url = get_tickets_url_from_event(event)
-        self.tickets_url_2 = self.get_better_tickets_url()
 
     def _create_from_arguments(self, arguments_dict):
         self.name = arguments_dict.get('name', None)
         self.place = arguments_dict.get('place', None)
         self.date = arguments_dict.get('date', None)
         self.tickets_url = arguments_dict.get('tickets_url', None)
+        self.tickets_url_2 = self.get_better_tickets_url()
+
+    def _create_from_lxml_element(self, event):
+        self.place = get_place_from_event(event)
+        self.name = get_name_from_event(event)
+        self.date = get_date_from_event(event)
+        self.tickets_url = get_tickets_url_from_event(event)
         self.tickets_url_2 = self.get_better_tickets_url()
 
     def __key(self):
@@ -118,7 +114,7 @@ class Event:
 
     def sms_content(self):
         content = self.sms_content_under_limit()
-        log_message(f"Prepared content with length = {len(content)}: {content}")
+        logger.info(f"Prepared content with length = {len(content)}: {content}")
         return content
 
     def sms_content_under_limit(self):
@@ -130,21 +126,14 @@ class Event:
             return f"Tickets for {self.name}: - {short_url}"
 
 
-def get_driver(headless=True):
-    options = Options()
-    if headless:
-        options.add_argument('--headless')
-    return webdriver.Firefox(options=options)
-
-
-def get_slask_events(driver):
-    driver.get(TICKETS_WEBSITE)
-    return [Event(selenium_event=event_row) for event_row in driver.find_elements(By.XPATH, XPATHS['event_row'])]
+def get_slask_events():
+    tree = etree.parse(urlopen(TICKETS_URL), etree.HTMLParser())
+    return [Event(lxml_event=event) for event in tree.xpath(XPATHS["event_row"])]
 
 
 def cut_url_via_smsplanet_api(url):
-    log_message(f"Cutting url '{url}' via sms planet api")
+    logger.info(f"Cutting url '{url}' via sms planet api")
     short_url = smsplanet_api.get_truncated_url(url)
-    log_message(f"URL has been cut to '{short_url}'")
+    logger.info(f"URL has been cut to '{short_url}'")
     return short_url
 
