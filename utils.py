@@ -1,4 +1,3 @@
-import logging
 import re
 
 from urllib.request import urlopen
@@ -9,7 +8,7 @@ from logger import logger
 import smsplanet_api
 
 
-def get_attribute_value_from_element_by_xpath(element, xpath, attribute_name):
+def get_attribute_value_from_element_by_xpath(element: etree._Element, xpath, attribute_name):
     try:
         return element.xpath(xpath)[0].get(attribute_name)
     except IndexError:
@@ -94,8 +93,7 @@ class Event:
         return self.__str__()
 
     def __eq__(self, other):
-        return self.name == other.name and self.date == other.date and self.place == other.place \
-               and self.tickets_url == other.tickets_url
+        return self.name == other.name and self.date == other.date and self.place == other.place
 
     def __hash__(self):
         return hash(self.__key())
