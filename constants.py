@@ -8,7 +8,8 @@ XPATHS = {
 }
 
 SCAN_PERIOD = 30  # time of sleeping in a loop
-LOG_FILE = "debug.log"
+DEBUG_LOG_FILE = "debug.log"
+INFO_LOG_FILE = "info.log"
 SKIP_FIRST_LOOP = True
 
 DEBUG = True  # set to True to avoid sending real sms
