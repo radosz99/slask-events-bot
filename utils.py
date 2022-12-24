@@ -2,6 +2,7 @@ import re
 
 from urllib.request import urlopen
 from lxml import etree
+from typing import List
 
 from constants import XPATHS, TICKETS_URL, SMS_LENGTH_LIMIT
 from logger import logger
@@ -51,10 +52,6 @@ def get_place_from_event(event_element):
     return get_text_inside_element_by_xpath(event_element, XPATHS['place'])
 
 
-def get_new_elements_on_list(new_list, old_list):
-    return list(set(new_list) - set(old_list))
-
-
 class Event:
     def __init__(self, **kwargs):
         if event := kwargs.get('lxml_event', None):
@@ -76,9 +73,6 @@ class Event:
         self.tickets_url = get_tickets_url_from_event(event)
         self.tickets_url_2 = self.get_better_tickets_url()
 
-    def __key(self):
-        return self.name, self.place, self.date, self.tickets_url
-
     def get_better_tickets_url(self):
         try:
             return self.tickets_url.replace('impreza', 'sala')
@@ -94,9 +88,6 @@ class Event:
 
     def __eq__(self, other):
         return self.name == other.name and self.date == other.date and self.place == other.place
-
-    def __hash__(self):
-        return hash(self.__key())
 
     def slask_first_team_game(self):
         return self.slask_first_team_event() and self.game_event()
@@ -127,6 +118,27 @@ class Event:
 def get_slask_events():
     tree = etree.parse(urlopen(TICKETS_URL), etree.HTMLParser())
     return [Event(lxml_event=event) for event in tree.xpath(XPATHS["event_row"])]
+
+
+def get_new_events(current_events: List[Event], previous_events: List[Event]):
+    logger.debug("Getting new events")
+    new_events = []
+    for current_event in current_events:
+        logger.debug(f"Checking event: {current_event}")
+        for previous_event in previous_events:
+            if current_event == previous_event:
+                logger.debug(f"Probably not a new event, but checking if the tickets url has been updated from None, "
+                             f"corresponding previous event: {previous_event}")
+                if current_event.tickets_url and not previous_event.tickets_url:
+                    logger.debug(f"New event, tickets url was updated from {previous_event.tickets_url} to "
+                                 f"{current_event.tickets_url}, adding to new events list")
+                    new_events.append(current_event)  # add if the same, but tickets url has been updated from None
+                break  # stop checking previous events list because the same event is on current events list
+        else:
+            logger.debug("Completely nww event, adding to new events list")
+            new_events.append(current_event)  # add if event is not equal to any from previous events list
+    logger.debug(f"New events = {new_events}")
+    return new_events
 
 
 def cut_url_via_smsplanet_api(url):

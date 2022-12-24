@@ -1,7 +1,7 @@
 import traceback
 from time import sleep
 
-from utils import get_slask_events, get_new_elements_on_list
+from utils import get_slask_events, get_new_events
 from sms_sender import notify_user_about_the_event_via_sms
 from constants import SKIP_FIRST_LOOP, SCAN_PERIOD
 from logger import logger
@@ -25,15 +25,17 @@ def notify_user_about_new_event_if_first_team_is_playing(new_event):
         notify_user_about_new_event(new_event)
 
 
-def notify_user_if_new_events_have_appeared(latest_events, current_events):
-    new_events = get_new_elements_on_list(current_events, latest_events)
+def notify_user_if_new_events_have_appeared(previous_events, current_events):
+    new_events = get_new_events(current_events, previous_events)
     if new_events:
-        logger.info(f"List of events has changed, old events = {latest_events}, current events = {current_events}")
+        logger.info(f"List of events has changed, previous events = {previous_events}, current events = {current_events}")
         for new_event in new_events:
             logger.info(f"New event - {new_event}")
             notify_user_about_new_event_if_first_team_is_playing(new_event)
+        return True
     else:
         logger.info("Nothing has changed, no new events :(")
+        return False
 
 
 def main():
@@ -44,9 +46,10 @@ def main():
             events = get_slask_events()
             if not latest_events and SKIP_FIRST_LOOP:
                 logger.info(f"First loop iteration, current events = {events}")
+                latest_events = events
             else:
-                notify_user_if_new_events_have_appeared(latest_events, events)
-            latest_events = events
+                if notify_user_if_new_events_have_appeared(latest_events, events):
+                    latest_events = events
         except Exception:
             logger.error(f"Exception has occurred = {traceback.format_exc()}")
         finally:
