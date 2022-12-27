@@ -56,4 +56,4 @@ To debug the application just set `DEBUG` to `True` and real SMS will not be sen
 Add execution permission to `run.sh` script and run it. It will run Docker daemon which will scrap data each `SCAN_PERIOD` seconds.
 # To do
 
-- [ ] - consider moving from Selenium to Urllib + BeautifulSoup since only page source is used
+- [x] - consider moving from Selenium to `urllib` + `lxml` since only page source is used
