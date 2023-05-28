@@ -96,7 +96,7 @@ class Event:
         return self.tickets_url is not None
 
     def slask_first_team_event(self):
-        return "WKS Slask Wroclaw" in self.name
+        return True
 
     def game_event(self):
         return "vs" in self.name

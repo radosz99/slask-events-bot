@@ -1,4 +1,4 @@
-TICKETS_URL = "http://wks-slask.abilet.pl/"
+TICKETS_URL = "https://kingwilki.abilet.pl/"
 XPATHS = {
     "event_row": ".//section[@id='bilety']//div[@class='row']",
     "place": ".//p[@class='card-place text-center']",
