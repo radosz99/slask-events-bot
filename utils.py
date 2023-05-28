@@ -1,10 +1,11 @@
 import re
 
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 from lxml import etree
 from typing import List
 
-from constants import XPATHS, TICKETS_URL, SMS_LENGTH_LIMIT
+from constants import XPATHS, TICKETS_URL, SMS_LENGTH_LIMIT, USER_AGENT
 from logger import logger
 import smsplanet_api
 
@@ -116,7 +117,14 @@ class Event:
 
 
 def get_slask_events():
-    tree = etree.parse(urlopen(TICKETS_URL), etree.HTMLParser())
+    try:
+        req = Request(TICKETS_URL)
+        req.add_header('User-Agent', USER_AGENT)
+        content = urlopen(req)
+        tree = etree.parse(content, etree.HTMLParser())
+    except HTTPError as e:
+        logger.error(f"Could not send request = {e}")
+        return []
     return [Event(lxml_event=event) for event in tree.xpath(XPATHS["event_row"])]
 
 

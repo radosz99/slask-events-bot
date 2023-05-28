@@ -6,6 +6,7 @@ XPATHS = {
     "title": ".//p[@class='card-title text-center']",
     "tickets_url": ".//a[@class='btn btn-block btn-info font-weight-bold']"
 }
+USER_AGENT = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
 
 SCAN_PERIOD = 30  # time of sleeping in a loop
 DEBUG_LOG_FILE = "debug.log"
