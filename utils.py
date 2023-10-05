@@ -44,8 +44,11 @@ def get_name_from_event(event_element):
 
 def get_date_from_event(event_element):
     date = get_text_inside_element_by_xpath(event_element, XPATHS['date'])
-    date = date.replace('\n', ' ').replace('\r', '').lstrip().rstrip()
-    return re.sub(' +', ' ', date)
+    if date:
+        date = date.replace('\n', ' ').replace('\r', '').lstrip().rstrip()
+        return re.sub(' +', ' ', date)
+    else:
+        return None
 
 
 def get_place_from_event(event_element):
@@ -135,7 +138,7 @@ def get_new_events(current_events: List[Event], previous_events: List[Event]):
                     new_events.append(current_event)  # add if the same, but tickets url has been updated from None
                 break  # stop checking previous events list because the same event is on current events list
         else:
-            logger.debug("Completely nww event, adding to new events list")
+            logger.debug("Completely new event, adding to new events list")
             new_events.append(current_event)  # add if event is not equal to any from previous events list
     logger.debug(f"New events = {new_events}")
     return new_events
